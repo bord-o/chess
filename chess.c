@@ -193,11 +193,29 @@ int main(void) {
     
     //bboard btestown = G4 | H4 | D3 | A1;
     //bboard btestenem  = F6 | B6 |  F2 | D5 | D6;
+    bboard pseudo_bish = computeBishopMoves(B2, 0, 0);
+    printBoard(pseudo_bish);
 
-    //printBoard(computeBishopMoves(B2, 0, 0));
-    printBoard(0x1000220000002008);
-    printf("least: %i -- most: %i\n", leastSignificantBit(0x1000220000002008), mostSignificantBit(0x1000220000002008));
-    printBoard(0x1000220000002008 & ~(bboard)pow(2,60));
+    //printBoard(0x1000220000002008);
+    //printf("least: %i -- most: %i\n", leastSignificantBit(0x1000220000002008), mostSignificantBit(0x1000220000002008));
+    //printBoard(0x1000220000002008 & ~(bboard)pow(2,60));
+
+    move moves[218]; //create and initialize the test move array to zero
+    for (int i=0; i < 218; i++) {
+        moves[i].from_square = 0;
+        moves[i].to_square = 0;
+        moves[i].flags = 0;
+
+    }
+
+    int counter = 0;
+    computeMoveList(pseudo_bish, B2, moves, &counter);
+
+    for (int i=0; i < 63; i++) {
+        printf("%i -> %i\n", moves[i].from_square, moves[i].to_square);
+    }
+    printf("%i", counter);
+
     return 0;
 }
 
@@ -502,13 +520,16 @@ bboard clearFilesToLeft(int index) {
     return cleared;
 }
 
-void computeMoveList(bboard pseudo_moves, bboard loc, move *moves, uint8_t *move_counter) {
+void computeMoveList(bboard pseudo_moves, bboard loc, move *moves, int *move_counter) {
     bboard moveBoard = pseudo_moves;
     while(moveBoard != 0) {
         moves[*move_counter].from_square = leastSignificantBit(loc);
-        moves[*move_counter].to_square = leastSignificantBit(pseudo_moves);
+        moves[*move_counter].to_square = leastSignificantBit(moveBoard);
 
-        *move_counter++;
+        //printf("%i", move_counter);
+        moveBoard = moveBoard & ~((bboard) 1 << leastSignificantBit(moveBoard));
+
+        (*move_counter)++;
     }
 }
 

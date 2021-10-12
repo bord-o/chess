@@ -5,9 +5,9 @@
 typedef uint64_t bboard;
 
 typedef struct move {
-    uint8_t to_square;
-    uint8_t from_square;
-    uint8_t flags;
+    int to_square;
+    int from_square;
+    int flags;
 } move;
 
 struct ChessBoard {
@@ -47,7 +47,7 @@ bboard computeBishopMoves(bboard bishopLoc, bboard ownPieces, bboard enemyPieces
 bboard computeQueenMoves(bboard queenLoc, bboard ownPieces, bboard enemyPieces);
 
 // todo: create function to get a list of squares from a bboard result of move computation
-void computeMoveList(bboard pseudo_moves, move *moves, uint8_t *move_counter);
+void computeMoveList(bboard pseudo_moves, bboard loc, move *moves, int *move_counter);
 
 // standard vectors
 void computeNorthVec(bboard *vectors);
