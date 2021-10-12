@@ -191,10 +191,9 @@ int main(void) {
     computeNWestVec(nwestVec);
 
     
-    //bboard btestown = G4 | H4 | D3 | A1;
-    //bboard btestenem  = F6 | B6 |  F2 | D5 | D6;
-    bboard pseudo_bish = computeBishopMoves(B2, 0, 0);
-    printBoard(pseudo_bish);
+    
+    
+    printBoard(BoardState.WhitePieces);
 
     //printBoard(0x1000220000002008);
     //printf("least: %i -- most: %i\n", leastSignificantBit(0x1000220000002008), mostSignificantBit(0x1000220000002008));
@@ -207,14 +206,15 @@ int main(void) {
         moves[i].flags = 0;
 
     }
-
     int counter = 0;
-    computeMoveList(pseudo_bish, B2, moves, &counter);
 
-    for (int i=0; i < 63; i++) {
+    //computeMoveList(pseudo_bish, B2, moves, &counter);
+    computeBlackPseudo(&BoardState, moves, &counter);
+
+    for (int i=0; i < 20; i++) {
         printf("%i -> %i\n", moves[i].from_square, moves[i].to_square);
     }
-    printf("%i", counter);
+    printf("%i\n", counter);
 
     return 0;
 }
@@ -518,6 +518,80 @@ bboard clearFilesToLeft(int index) {
     }
 
     return cleared;
+}
+
+void computeWhitePseudo(struct ChessBoard *BoardState, move *moves, int *move_counter) {
+    for (int i=0; i < 63; i++) {
+        bboard current_square =  ((bboard) 1 << (bboard) i);
+
+        if (current_square & BoardState->WhitePawns) {
+            printf("%i is pawn\n",i);
+            computeMoveList(computePawnMovesWhite(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
+                current_square, moves, move_counter);
+        }
+        else if (current_square & BoardState->WhiteKnights) {
+            printf("%i is knight\n",i);
+            computeMoveList(computeKnightMoves(current_square, BoardState->WhitePieces), 
+                current_square, moves, move_counter);
+        }
+        else if (current_square & BoardState->WhiteBishops) {
+            printf("%i is bishop\n",i);
+            computeMoveList(computeBishopMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
+                current_square, moves, move_counter);
+        }
+        else if (current_square & BoardState->WhiteRooks) {
+            printf("%i is rook\n",i);
+            computeMoveList(computeRookMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
+                current_square, moves, move_counter);
+        }
+        else if (current_square & BoardState->WhiteQueens) {
+            printf("%i is queen\n",i);
+            computeMoveList(computeQueenMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
+                current_square, moves, move_counter);
+        }
+        else if (current_square & BoardState->WhiteKings) {
+            printf("%i is king\n",i);
+            computeMoveList(computeKingMoves(current_square, BoardState->WhitePieces), 
+                current_square, moves, move_counter);
+        }
+    }
+}
+
+void computeBlackPseudo(struct ChessBoard *BoardState, move *moves, int *move_counter) {
+    for (int i=0; i < 63; i++) {
+        bboard current_square =  ((bboard) 1 << (bboard) i);
+
+        if (current_square & BoardState->BlackPawns) {
+            printf("%i is pawn\n",i);
+            computeMoveList(computePawnMovesBlack(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
+                current_square, moves, move_counter);
+        }
+        else if (current_square & BoardState->BlackKnights) {
+            printf("%i is knight\n",i);
+            computeMoveList(computeKnightMoves(current_square, BoardState->BlackPieces), 
+                current_square, moves, move_counter);
+        }
+        else if (current_square & BoardState->BlackBishops) {
+            printf("%i is bishop\n",i);
+            computeMoveList(computeBishopMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
+                current_square, moves, move_counter);
+        }
+        else if (current_square & BoardState->BlackRooks) {
+            printf("%i is rook\n",i);
+            computeMoveList(computeRookMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
+                current_square, moves, move_counter);
+        }
+        else if (current_square & BoardState->BlackQueens) {
+            printf("%i is queen\n",i);
+            computeMoveList(computeQueenMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
+                current_square, moves, move_counter);
+        }
+        else if (current_square & BoardState->BlackKings) {
+            printf("%i is king\n",i);
+            computeMoveList(computeKingMoves(current_square, BoardState->BlackPieces), 
+                current_square, moves, move_counter);
+        }
+    }
 }
 
 void computeMoveList(bboard pseudo_moves, bboard loc, move *moves, int *move_counter) {

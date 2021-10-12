@@ -46,8 +46,13 @@ bboard computeRookMoves(bboard rookLoc, bboard ownPieces, bboard enemyPieces); /
 bboard computeBishopMoves(bboard bishopLoc, bboard ownPieces, bboard enemyPieces); //relies on precomputed vectors and a blocker check
 bboard computeQueenMoves(bboard queenLoc, bboard ownPieces, bboard enemyPieces);
 
-// todo: create function to get a list of squares from a bboard result of move computation
+// function to get a list of squares from a bboard result of move computation
 void computeMoveList(bboard pseudo_moves, bboard loc, move *moves, int *move_counter);
+
+// function to iterate over all square on board, computing moves for each piece type and adding
+// the move lists to the global move array
+void computeWhitePseudo(struct ChessBoard *BoardState, move *moves, int *move_counter);
+void computeBlackPseudo(struct ChessBoard *BoardState, move *moves, int *move_counter);
 
 // standard vectors
 void computeNorthVec(bboard *vectors);
