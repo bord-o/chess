@@ -10,6 +10,7 @@ typedef struct move {
     int flags;
 } move;
 
+
 struct ChessBoard {
     // piece bitboards
     bboard WhitePawns;
@@ -53,6 +54,11 @@ void computeMoveList(bboard pseudo_moves, bboard loc, move *moves, int *move_cou
 // the move lists to the global move array
 void computeWhitePseudo(struct ChessBoard *BoardState, move *moves, int *move_counter);
 void computeBlackPseudo(struct ChessBoard *BoardState, move *moves, int *move_counter);
+
+// todo: create functions for moving pieces, possibly a function for getting square's current value, and setting squares
+void executeMove(struct ChessBoard *BoardState, move move);
+int getPieceAtIndex(struct ChessBoard *BoardState, int index);
+void setPieceAtIndex(struct ChessBoard *BoardState, int index, int pieceType);
 
 // standard vectors
 void computeNorthVec(bboard *vectors);
