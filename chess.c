@@ -27,19 +27,19 @@ struct ChessBoard BoardState = {
 };
 
 // defines for distiguishing piece types
-#define WPAWN 1;
-#define WKNIGHT 2;
-#define WBISHOP 3;
-#define WROOK 4;
-#define WQUEEN 5;
-#define WKING 6;
+#define WPAWN 1
+#define WKNIGHT 2
+#define WBISHOP 3
+#define WROOK 4
+#define WQUEEN 5
+#define WKING 6
 
-#define BPAWN -1;
-#define BKNIGHT -2;
-#define BBISHOP -3;
-#define BROOK -4;
-#define BQUEEN -5;
-#define BKING -6;
+#define BPAWN -1
+#define BKNIGHT -2
+#define BBISHOP -3
+#define BROOK -4
+#define BQUEEN -5
+#define BKING -6
 
 //lookup tables for clearing and masking ranks and files
 enum Ranks {
@@ -207,8 +207,10 @@ int main(void) {
 
     
     
-    
-    printBoard(BoardState.WhitePieces);
+    move test_move = {
+        .from_square = 27,
+        .to_square = 35
+    };
 
     //printBoard(0x1000220000002008);
     //printf("least: %i -- most: %i\n", leastSignificantBit(0x1000220000002008), mostSignificantBit(0x1000220000002008));
@@ -223,15 +225,63 @@ int main(void) {
     }
     int counter = 0;
 
-    //computeMoveList(pseudo_bish, B2, moves, &counter);
-    computeBlackPseudo(&BoardState, moves, &counter);
+    //computeWhitePseudo(&BoardState, moves, &counter);
 
-    for (int i=0; i < 20; i++) {
-        printf("%i -> %i\n", moves[i].from_square, moves[i].to_square);
-    }
-    printf("%i\n", counter);
+    //for (int i=0; i < 20; i++) {
+    //    printf("%i -> %i\n", moves[i].from_square, moves[i].to_square);
+    //}
+    //printf("%i\n", counter);
 
     return 0;
+}
+
+
+int getPieceAtIndex(struct ChessBoard *BoardState, int index){
+    
+    bboard current_square =  ((bboard) 1 << (bboard)index);
+
+    if (current_square & BoardState->WhitePawns) {
+        return WPAWN;
+    }
+    else if (current_square & BoardState->WhiteKnights) {
+        return WKNIGHT;
+    }
+    else if (current_square & BoardState->WhiteBishops) {
+        return WBISHOP;
+    }
+    else if (current_square & BoardState->WhiteRooks) {
+        return WROOK;
+    }
+    else if (current_square & BoardState->WhiteQueens) {
+        return WQUEEN;
+    }
+    else if (current_square & BoardState->WhiteKings) {
+        return WKING;
+    }
+
+    else if (current_square & BoardState->BlackPawns) {
+        return BPAWN;
+    }
+    else if (current_square & BoardState->BlackKnights) {
+        return BKNIGHT;
+    }
+    else if (current_square & BoardState->BlackBishops) {
+        return BBISHOP;
+    }
+    else if (current_square & BoardState->BlackRooks) {
+        return BROOK;
+    }
+    else if (current_square & BoardState->BlackQueens) {
+        return BQUEEN;
+    }
+    else if (current_square & BoardState->BlackKings) {
+        return BKING;
+    }
+    else return 0;
+}
+
+void setPieceAtIndex(struct ChessBoard *BoardState, int index, int pieceType) {
+    // todo
 }
 
 void computeNWestVec(bboard *vectors) {
@@ -536,75 +586,61 @@ bboard clearFilesToLeft(int index) {
 }
 
 void computeWhitePseudo(struct ChessBoard *BoardState, move *moves, int *move_counter) {
+    
     for (int i=0; i < 63; i++) {
-        bboard current_square =  ((bboard) 1 << (bboard) i);
-
-        if (current_square & BoardState->WhitePawns) {
-            printf("%i is pawn\n",i);
-            computeMoveList(computePawnMovesWhite(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
-                current_square, moves, move_counter);
-        }
-        else if (current_square & BoardState->WhiteKnights) {
-            printf("%i is knight\n",i);
-            computeMoveList(computeKnightMoves(current_square, BoardState->WhitePieces), 
-                current_square, moves, move_counter);
-        }
-        else if (current_square & BoardState->WhiteBishops) {
-            printf("%i is bishop\n",i);
-            computeMoveList(computeBishopMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
-                current_square, moves, move_counter);
-        }
-        else if (current_square & BoardState->WhiteRooks) {
-            printf("%i is rook\n",i);
-            computeMoveList(computeRookMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
-                current_square, moves, move_counter);
-        }
-        else if (current_square & BoardState->WhiteQueens) {
-            printf("%i is queen\n",i);
-            computeMoveList(computeQueenMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
-                current_square, moves, move_counter);
-        }
-        else if (current_square & BoardState->WhiteKings) {
-            printf("%i is king\n",i);
-            computeMoveList(computeKingMoves(current_square, BoardState->WhitePieces), 
-                current_square, moves, move_counter);
+        
+        int piece_type = getPieceAtIndex(BoardState, i);
+        bboard current_square =  ((bboard) 1 << (bboard)i);
+        switch (piece_type) {
+            case WPAWN:
+                computeMoveList(computePawnMovesWhite(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
+                    current_square, moves, move_counter);
+            case WKNIGHT:
+                computeMoveList(computeKnightMoves(current_square, BoardState->WhitePieces), 
+                    current_square, moves, move_counter);
+            case WBISHOP:
+                computeMoveList(computeBishopMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
+                    current_square, moves, move_counter);
+            case WROOK:
+                computeMoveList(computeRookMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
+                    current_square, moves, move_counter);
+            case WQUEEN:
+                computeMoveList(computeQueenMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
+                    current_square, moves, move_counter);
+            case WKING:
+                computeMoveList(computeKingMoves(current_square, BoardState->WhitePieces), 
+                    current_square, moves, move_counter);
         }
     }
 }
 
 void computeBlackPseudo(struct ChessBoard *BoardState, move *moves, int *move_counter) {
     for (int i=0; i < 63; i++) {
+
+        int piece_type = getPieceAtIndex(BoardState, i);
         bboard current_square =  ((bboard) 1 << (bboard) i);
 
-        if (current_square & BoardState->BlackPawns) {
-            printf("%i is pawn\n",i);
-            computeMoveList(computePawnMovesBlack(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
-                current_square, moves, move_counter);
-        }
-        else if (current_square & BoardState->BlackKnights) {
-            printf("%i is knight\n",i);
-            computeMoveList(computeKnightMoves(current_square, BoardState->BlackPieces), 
-                current_square, moves, move_counter);
-        }
-        else if (current_square & BoardState->BlackBishops) {
-            printf("%i is bishop\n",i);
-            computeMoveList(computeBishopMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
-                current_square, moves, move_counter);
-        }
-        else if (current_square & BoardState->BlackRooks) {
-            printf("%i is rook\n",i);
-            computeMoveList(computeRookMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
-                current_square, moves, move_counter);
-        }
-        else if (current_square & BoardState->BlackQueens) {
-            printf("%i is queen\n",i);
-            computeMoveList(computeQueenMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
-                current_square, moves, move_counter);
-        }
-        else if (current_square & BoardState->BlackKings) {
-            printf("%i is king\n",i);
-            computeMoveList(computeKingMoves(current_square, BoardState->BlackPieces), 
-                current_square, moves, move_counter);
+        switch (piece_type) {
+        
+            case BPAWN:
+                computeMoveList(computePawnMovesBlack(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
+                    current_square, moves, move_counter);
+            case BKNIGHT:
+                computeMoveList(computeKnightMoves(current_square, BoardState->BlackPieces), 
+                    current_square, moves, move_counter);
+            case BBISHOP:
+                computeMoveList(computeBishopMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
+                    current_square, moves, move_counter);
+            case BROOK:
+                computeMoveList(computeRookMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
+                    current_square, moves, move_counter);
+            case BQUEEN:
+                computeMoveList(computeQueenMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
+                    current_square, moves, move_counter);
+            case BKING:
+                computeMoveList(computeKingMoves(current_square, BoardState->BlackPieces), 
+                    current_square, moves, move_counter);
+
         }
     }
 }

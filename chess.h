@@ -56,7 +56,7 @@ void computeWhitePseudo(struct ChessBoard *BoardState, move *moves, int *move_co
 void computeBlackPseudo(struct ChessBoard *BoardState, move *moves, int *move_counter);
 
 // todo: create functions for moving pieces, possibly a function for getting square's current value, and setting squares
-void executeMove(struct ChessBoard *BoardState, move move);
+void executeMove(struct ChessBoard *BoardState, move move); // does not check for move validation
 int getPieceAtIndex(struct ChessBoard *BoardState, int index);
 void setPieceAtIndex(struct ChessBoard *BoardState, int index, int pieceType);
 
