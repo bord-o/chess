@@ -208,8 +208,8 @@ int main(void) {
     
     
     move test_move = {
-        .from_square = 27,
-        .to_square = 35
+        .from_square = 8,
+        .to_square = 16 
     };
 
     //printBoard(0x1000220000002008);
@@ -225,6 +225,10 @@ int main(void) {
     }
     int counter = 0;
 
+    printBoard(BoardState.WhitePieces);
+    //setPieceAtIndex(&BoardState, 27, 4);
+    executeMove(&BoardState, test_move);
+    printBoard(BoardState.WhitePieces);
     //computeWhitePseudo(&BoardState, moves, &counter);
 
     //for (int i=0; i < 20; i++) {
@@ -234,7 +238,16 @@ int main(void) {
 
     return 0;
 }
+void executeMove(struct ChessBoard *BoardState, move move) {
+    int to = move.to_square;
+    int from = move.from_square;
+    int topiece = getPieceAtIndex(BoardState, to);
+    int frompiece = getPieceAtIndex(BoardState, from);
 
+    setPieceAtIndex(BoardState, to, topiece);
+    setPieceAtIndex(BoardState, from, 0);
+
+}
 
 int getPieceAtIndex(struct ChessBoard *BoardState, int index){
     
@@ -282,6 +295,37 @@ int getPieceAtIndex(struct ChessBoard *BoardState, int index){
 
 void setPieceAtIndex(struct ChessBoard *BoardState, int index, int pieceType) {
     // todo
+    bboard loc = (bboard)1 << (bboard)index; // get bitboard version of location
+    switch (pieceType) {
+        
+        case BPAWN:
+            BoardState->BlackPawns |= loc;
+        case BKNIGHT:
+            BoardState->BlackKnights|= loc;
+        case BBISHOP:
+            BoardState->BlackBishops|= loc;
+        case BROOK:
+            BoardState->BlackRooks|= loc;
+        case BQUEEN:
+            BoardState->BlackQueens |= loc;
+        case BKING:
+            BoardState->BlackKings|= loc;
+
+        case WPAWN:
+            BoardState->WhitePawns|= loc;
+        case WKNIGHT:
+            BoardState->WhiteKnights|= loc;
+        case WBISHOP:
+            BoardState->WhiteBishops|= loc;
+        case WROOK:
+            BoardState->WhiteRooks|= loc;
+        case WQUEEN:
+            BoardState->WhiteQueens |= loc;
+        case WKING:
+            BoardState->WhiteKings|= loc;
+    }
+    BoardState->WhitePieces = BoardState->WhitePawns|BoardState->WhiteKnights|BoardState->WhiteBishops|BoardState->WhiteRooks|BoardState->WhiteQueens|BoardState->WhiteKings;
+    BoardState->BlackPieces = BoardState->BlackPawns|BoardState->BlackKnights|BoardState->BlackBishops|BoardState->BlackRooks|BoardState->BlackQueens|BoardState->BlackKings;
 }
 
 void computeNWestVec(bboard *vectors) {
