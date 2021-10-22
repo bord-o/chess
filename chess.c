@@ -23,6 +23,7 @@ struct ChessBoard BoardState = {
     .WhitePieces = 0xffff,
     .BlackPieces = 0xffff000000000000,
 
+    .Empty = 0xffffffff0000,
     .AllPieces = 0xffff00000000ffff
 };
 
@@ -226,7 +227,7 @@ int main(void) {
     int counter = 0;
 
     printBoard(BoardState.WhitePieces);
-    //setPieceAtIndex(&BoardState, 27, 4);
+    //setPieceAtIndex(&BoardState, 8, 0);
     executeMove(&BoardState, test_move);
     printBoard(BoardState.WhitePieces);
     //computeWhitePseudo(&BoardState, moves, &counter);
@@ -241,10 +242,8 @@ int main(void) {
 void executeMove(struct ChessBoard *BoardState, move move) {
     int to = move.to_square;
     int from = move.from_square;
-    int topiece = getPieceAtIndex(BoardState, to);
     int frompiece = getPieceAtIndex(BoardState, from);
-
-    setPieceAtIndex(BoardState, to, topiece);
+    setPieceAtIndex(BoardState, to, frompiece);
     setPieceAtIndex(BoardState, from, 0);
 
 }
@@ -297,7 +296,8 @@ void setPieceAtIndex(struct ChessBoard *BoardState, int index, int pieceType) {
     // todo
     bboard loc = (bboard)1 << (bboard)index; // get bitboard version of location
     switch (pieceType) {
-        
+        case 0:
+            BoardState->Empty |= loc;
         case BPAWN:
             BoardState->BlackPawns |= loc;
         case BKNIGHT:
@@ -325,7 +325,11 @@ void setPieceAtIndex(struct ChessBoard *BoardState, int index, int pieceType) {
             BoardState->WhiteKings|= loc;
     }
     BoardState->WhitePieces = BoardState->WhitePawns|BoardState->WhiteKnights|BoardState->WhiteBishops|BoardState->WhiteRooks|BoardState->WhiteQueens|BoardState->WhiteKings;
+    BoardState->WhitePieces &= ~(BoardState->Empty & BoardState->WhitePieces);
     BoardState->BlackPieces = BoardState->BlackPawns|BoardState->BlackKnights|BoardState->BlackBishops|BoardState->BlackRooks|BoardState->BlackQueens|BoardState->BlackKings;
+    BoardState->BlackPieces &= ~(BoardState->Empty & BoardState->BlackPieces);
+
+    BoardState->AllPieces = BoardState->WhitePieces | BoardState->BlackPieces;
 }
 
 void computeNWestVec(bboard *vectors) {

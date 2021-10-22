@@ -28,6 +28,7 @@ struct ChessBoard {
     // color bitboards
     bboard WhitePieces;
     bboard BlackPieces;
+    bboard Empty;
     bboard AllPieces;
 };
 
