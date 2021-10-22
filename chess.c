@@ -208,10 +208,7 @@ int main(void) {
 
     
     
-    move test_move = {
-        .from_square = 8,
-        .to_square = 16 
-    };
+   
 
     //printBoard(0x1000220000002008);
     //printf("least: %i -- most: %i\n", leastSignificantBit(0x1000220000002008), mostSignificantBit(0x1000220000002008));
@@ -225,12 +222,20 @@ int main(void) {
 
     }
     int counter = 0;
+    move test_move = {
+        .from_square = 57,
+        .to_square = 42 
+    };
 
-    printBoard(BoardState.WhitePieces);
-    //setPieceAtIndex(&BoardState, 8, 0);
+    printBoard(BoardState.AllPieces);
+    computeWhitePseudo(&BoardState, moves, &counter);
+
+    executeMove(&BoardState, moves[0]);
     executeMove(&BoardState, test_move);
-    printBoard(BoardState.WhitePieces);
-    //computeWhitePseudo(&BoardState, moves, &counter);
+
+    printBoard(BoardState.AllPieces);
+    printBoard(BoardState.Empty);
+    //setPieceAtIndex(&BoardState, 8, 0);
 
     //for (int i=0; i < 20; i++) {
     //    printf("%i -> %i\n", moves[i].from_square, moves[i].to_square);
@@ -243,8 +248,8 @@ void executeMove(struct ChessBoard *BoardState, move move) {
     int to = move.to_square;
     int from = move.from_square;
     int frompiece = getPieceAtIndex(BoardState, from);
-    setPieceAtIndex(BoardState, to, frompiece);
     setPieceAtIndex(BoardState, from, 0);
+    setPieceAtIndex(BoardState, to, frompiece);
 
 }
 
@@ -298,38 +303,75 @@ void setPieceAtIndex(struct ChessBoard *BoardState, int index, int pieceType) {
     switch (pieceType) {
         case 0:
             BoardState->Empty |= loc;
+            break;
         case BPAWN:
             BoardState->BlackPawns |= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->BlackPawns &= ~(BoardState->Empty & BoardState->BlackPawns);
+            break;
         case BKNIGHT:
             BoardState->BlackKnights|= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->BlackKnights &= ~(BoardState->Empty & BoardState->BlackKnights);
+            break;
         case BBISHOP:
             BoardState->BlackBishops|= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->BlackBishops &= ~(BoardState->Empty & BoardState->BlackBishops);
+            break;
         case BROOK:
             BoardState->BlackRooks|= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->BlackRooks &= ~(BoardState->Empty & BoardState->BlackRooks);
+            break;
         case BQUEEN:
             BoardState->BlackQueens |= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->BlackQueens &= ~(BoardState->Empty & BoardState->BlackQueens);
+            break;
         case BKING:
             BoardState->BlackKings|= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->BlackKings &= ~(BoardState->Empty & BoardState->BlackKings);
+            break;
 
         case WPAWN:
             BoardState->WhitePawns|= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->WhitePawns &= ~(BoardState->Empty & BoardState->WhitePawns);
+            break;
         case WKNIGHT:
             BoardState->WhiteKnights|= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->WhiteKnights &= ~(BoardState->Empty & BoardState->WhiteKnights);
+            break;
         case WBISHOP:
             BoardState->WhiteBishops|= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->WhiteBishops &= ~(BoardState->Empty & BoardState->WhiteBishops);
+            break;
         case WROOK:
             BoardState->WhiteRooks|= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->WhiteRooks &= ~(BoardState->Empty & BoardState->WhiteRooks);
+            break;
         case WQUEEN:
             BoardState->WhiteQueens |= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->WhiteQueens &= ~(BoardState->Empty & BoardState->WhiteQueens);
+            break;
         case WKING:
             BoardState->WhiteKings|= loc;
+            BoardState->Empty &= ~loc;
+            BoardState->WhiteKings &= ~(BoardState->Empty & BoardState->WhiteKings);
+            break;
     }
     BoardState->WhitePieces = BoardState->WhitePawns|BoardState->WhiteKnights|BoardState->WhiteBishops|BoardState->WhiteRooks|BoardState->WhiteQueens|BoardState->WhiteKings;
-    BoardState->WhitePieces &= ~(BoardState->Empty & BoardState->WhitePieces);
-    BoardState->BlackPieces = BoardState->BlackPawns|BoardState->BlackKnights|BoardState->BlackBishops|BoardState->BlackRooks|BoardState->BlackQueens|BoardState->BlackKings;
-    BoardState->BlackPieces &= ~(BoardState->Empty & BoardState->BlackPieces);
+    //BoardState->WhitePieces &= ~(BoardState->Empty & BoardState->WhitePieces);
+    BoardState->BlackPieces = (BoardState->BlackPawns|BoardState->BlackKnights|BoardState->BlackBishops|BoardState->BlackRooks|BoardState->BlackQueens|BoardState->BlackKings);
+    //BoardState->BlackPieces &= ~(BoardState->Empty & BoardState->BlackPieces);
 
-    BoardState->AllPieces = BoardState->WhitePieces | BoardState->BlackPieces;
+    BoardState->AllPieces = (BoardState->WhitePieces | BoardState->BlackPieces);
 }
 
 void computeNWestVec(bboard *vectors) {
@@ -643,21 +685,27 @@ void computeWhitePseudo(struct ChessBoard *BoardState, move *moves, int *move_co
             case WPAWN:
                 computeMoveList(computePawnMovesWhite(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
                     current_square, moves, move_counter);
+                break;
             case WKNIGHT:
                 computeMoveList(computeKnightMoves(current_square, BoardState->WhitePieces), 
                     current_square, moves, move_counter);
+                break;
             case WBISHOP:
                 computeMoveList(computeBishopMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
                     current_square, moves, move_counter);
+                break;
             case WROOK:
                 computeMoveList(computeRookMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
                     current_square, moves, move_counter);
+                break;
             case WQUEEN:
                 computeMoveList(computeQueenMoves(current_square, BoardState->WhitePieces, BoardState->BlackPieces), 
                     current_square, moves, move_counter);
+                break;
             case WKING:
                 computeMoveList(computeKingMoves(current_square, BoardState->WhitePieces), 
                     current_square, moves, move_counter);
+                break;
         }
     }
 }
@@ -673,21 +721,27 @@ void computeBlackPseudo(struct ChessBoard *BoardState, move *moves, int *move_co
             case BPAWN:
                 computeMoveList(computePawnMovesBlack(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
                     current_square, moves, move_counter);
+                break;
             case BKNIGHT:
                 computeMoveList(computeKnightMoves(current_square, BoardState->BlackPieces), 
                     current_square, moves, move_counter);
+                break;
             case BBISHOP:
                 computeMoveList(computeBishopMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
                     current_square, moves, move_counter);
+                break;
             case BROOK:
                 computeMoveList(computeRookMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
                     current_square, moves, move_counter);
+                break;
             case BQUEEN:
                 computeMoveList(computeQueenMoves(current_square, BoardState->BlackPieces, BoardState->WhitePieces), 
                     current_square, moves, move_counter);
+                break;
             case BKING:
                 computeMoveList(computeKingMoves(current_square, BoardState->BlackPieces), 
                     current_square, moves, move_counter);
+                break;
 
         }
     }
