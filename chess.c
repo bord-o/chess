@@ -24,7 +24,9 @@ struct ChessBoard BoardState = {
     .BlackPieces = 0xffff000000000000,
 
     .Empty = 0xffffffff0000,
-    .AllPieces = 0xffff00000000ffff
+    .AllPieces = 0xffff00000000ffff,
+
+    .side = 1
 };
 
 // defines for distiguishing piece types
@@ -214,33 +216,42 @@ int main(void) {
     //printf("least: %i -- most: %i\n", leastSignificantBit(0x1000220000002008), mostSignificantBit(0x1000220000002008));
     //printBoard(0x1000220000002008 & ~(bboard)pow(2,60));
 
-    move moves[218]; //create and initialize the test move array to zero
+    move p_moves[218]; //create and initialize the test move array to zero
+    move l_moves[218];
     for (int i=0; i < 218; i++) {
-        moves[i].from_square = 0;
-        moves[i].to_square = 0;
-        moves[i].flags = 0;
+        p_moves[i].from_square = 0;
+        p_moves[i].to_square = 0;
+        p_moves[i].flags = 0;
+
+        l_moves[i].from_square = 0;
+        l_moves[i].to_square = 0;
+        l_moves[i].flags = 0;
 
     }
-    int counter = 0;
+    int p_counter = 0;
+    int l_counter = 0;
+
     move test_move = {
         .from_square = 57,
         .to_square = 42 
     };
 
-    printBoard(BoardState.AllPieces);
-    computeWhitePseudo(&BoardState, moves, &counter);
+    //printBoard(BoardState.AllPieces);
+    computeWhitePseudo(&BoardState, p_moves, &p_counter);
+    validateMoveList(&BoardState, p_moves, &p_counter, l_moves, &l_counter, 1);
 
-    executeMove(&BoardState, moves[0]);
-    executeMove(&BoardState, test_move);
+    //executeMove(&BoardState, moves[0]);
+    //executeMove(&BoardState, test_move);
 
-    printBoard(BoardState.AllPieces);
-    printBoard(BoardState.Empty);
+    //printBoard(BoardState.AllPieces);
+    //printBoard(BoardState.Empty);
+
     //setPieceAtIndex(&BoardState, 8, 0);
 
-    //for (int i=0; i < 20; i++) {
-    //    printf("%i -> %i\n", moves[i].from_square, moves[i].to_square);
-    //}
-    //printf("%i\n", counter);
+    for (int i=0; i < 30; i++) {
+        printf("%i -> %i\n", p_moves[i].from_square, p_moves[i].to_square);
+    }
+    printf("%i\n", p_counter);
 
     return 0;
 }
@@ -743,6 +754,51 @@ void computeBlackPseudo(struct ChessBoard *BoardState, move *moves, int *move_co
                     current_square, moves, move_counter);
                 break;
 
+        }
+    }
+}
+
+void validateMoveList(struct ChessBoard *InitialBoard, move *pseudo_move_list, int *p_counter, move *legal_move_list, int *l_counter, int side) {
+    for (int i = 0; i < *p_counter; i++) {
+
+        int t_counter = 0;
+        int king_index = 0;
+        int reject_move = 0;
+        move p_move = pseudo_move_list[i];
+        struct ChessBoard TestBoard = *InitialBoard;
+
+        move test_moves[218];
+            for (int i=0; i < 218; i++) {
+                test_moves[i].from_square = 0;
+                test_moves[i].to_square = 0;
+                test_moves[i].flags = 0;
+
+            }
+        executeMove(&TestBoard, p_move);
+        printBoard(TestBoard.AllPieces);
+        // need to compute pseudo moves for black at test position and see if any black pieces can take white king...
+        // for brevity im going to assume theres only one king per side
+        // this loop runs when its whites turn on the initial board
+        if (InitialBoard->side) {
+            computeBlackPseudo(&TestBoard, test_moves, &t_counter);
+            king_index = leastSignificantBit(TestBoard.WhiteKings);
+        } 
+        else {
+            computeWhitePseudo(&TestBoard, test_moves, &t_counter);
+            king_index = leastSignificantBit(TestBoard.BlackKings);
+        }
+
+        for (int j = 0; j < t_counter; j++) {
+            if (test_moves[j].to_square == king_index) {
+                // king can be attacked, reject move by breaking loop
+                reject_move = 1;
+                break;
+            }
+        }
+
+        if (!reject_move) {
+            legal_move_list[*l_counter] = pseudo_move_list[i];
+            (*l_counter)++;
         }
     }
 }

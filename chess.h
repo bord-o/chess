@@ -30,6 +30,8 @@ struct ChessBoard {
     bboard BlackPieces;
     bboard Empty;
     bboard AllPieces;
+
+    int side;
 };
 
 // helper functions
@@ -50,6 +52,8 @@ bboard computeQueenMoves(bboard queenLoc, bboard ownPieces, bboard enemyPieces);
 
 // function to get a list of squares from a bboard result of move computation
 void computeMoveList(bboard pseudo_moves, bboard loc, move *moves, int *move_counter);
+// function to validate a list of pseudal legal moves by looking for checks in resulting positions
+void validateMoveList(struct ChessBoard *InitialBoard, move *pseudo_move_list, int *p_counter, move *legal_move_list, int *l_counter, int side);
 
 // function to iterate over all square on board, computing moves for each piece type and adding
 // the move lists to the global move array
