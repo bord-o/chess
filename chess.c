@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include "chess.h"
 
 struct ChessBoard BoardState = {
@@ -215,6 +216,8 @@ int main(void) {
     //printBoard(0x1000220000002008);
     //printf("least: %i -- most: %i\n", leastSignificantBit(0x1000220000002008), mostSignificantBit(0x1000220000002008));
     //printBoard(0x1000220000002008 & ~(bboard)pow(2,60));
+    
+    srand(time(NULL)); // get random seed for tests
 
     move p_moves[218]; //create and initialize the test move array to zero
     move l_moves[218];
@@ -237,8 +240,39 @@ int main(void) {
     };
 
     //printBoard(BoardState.AllPieces);
-    computeWhitePseudo(&BoardState, p_moves, &p_counter);
-    validateMoveList(&BoardState, p_moves, &p_counter, l_moves, &l_counter, 1);
+    // loop to test random move generation and validation...
+    for (int i = 0; i < 200000; i++) {
+
+        if (BoardState.side == 1) {
+            computeWhitePseudo(&BoardState, p_moves, &p_counter);
+        } else {
+            computeBlackPseudo(&BoardState, p_moves, &p_counter);
+        }
+
+        validateMoveList(&BoardState, p_moves, &p_counter, l_moves, &l_counter, 1);
+
+        int x = rand() % l_counter ? l_counter > 0: 0;
+        //printf("%i\n", x);
+
+        executeMove(&BoardState, l_moves[x]);
+
+        // after executing move, zero the move buffer and counter
+        BoardState.side = !BoardState.side;
+        p_counter = 0;
+        l_counter = 0;
+
+        for (int i=0; i < 218; i++) {
+            p_moves[i].from_square = 0;
+            p_moves[i].to_square = 0;
+            p_moves[i].flags = 0;
+
+            l_moves[i].from_square = 0;
+            l_moves[i].to_square = 0;
+            l_moves[i].flags = 0;
+
+        }
+    }
+
 
     //executeMove(&BoardState, moves[0]);
     //executeMove(&BoardState, test_move);
@@ -249,9 +283,9 @@ int main(void) {
     //setPieceAtIndex(&BoardState, 8, 0);
 
     for (int i=0; i < 30; i++) {
-        printf("%i -> %i\n", p_moves[i].from_square, p_moves[i].to_square);
+        //printf("%i -> %i\n", p_moves[i].from_square, p_moves[i].to_square);
     }
-    printf("%i\n", p_counter);
+    //printf("%i\n", p_counter);
 
     return 0;
 }
@@ -775,7 +809,7 @@ void validateMoveList(struct ChessBoard *InitialBoard, move *pseudo_move_list, i
 
             }
         executeMove(&TestBoard, p_move);
-        printBoard(TestBoard.AllPieces);
+        //printBoard(TestBoard.AllPieces);
         // need to compute pseudo moves for black at test position and see if any black pieces can take white king...
         // for brevity im going to assume theres only one king per side
         // this loop runs when its whites turn on the initial board
