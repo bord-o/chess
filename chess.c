@@ -234,14 +234,15 @@ int main(void) {
     int p_counter = 0;
     int l_counter = 0;
 
-    move test_move = {
-        .from_square = 57,
-        .to_square = 42 
+    move test_moves[] = {
+        { .from_square = 1, .to_square = 18},
+        { .from_square = 51, .to_square = 35},
+        { .from_square = 18, .to_square = 35},
+        { .from_square = 59, .to_square = 35}
     };
 
-    //printBoard(BoardState.AllPieces);
-    // loop to test random move generation and validation...
-    for (int i = 0; i < 200000; i++) {
+    //loop to test random move generation and validation...
+    for (int i = 0; i < 300; i++) {
 
         if (BoardState.side == 1) {
             computeWhitePseudo(&BoardState, p_moves, &p_counter);
@@ -251,8 +252,9 @@ int main(void) {
 
         validateMoveList(&BoardState, p_moves, &p_counter, l_moves, &l_counter, 1);
 
-        int x = rand() % l_counter ? l_counter > 0: 0;
-        //printf("%i\n", x);
+        //rand() % (max_number + 1 - minimum_number) + minimum_number
+        int x = rand() % (l_counter + 1 - 0) + 0;
+        printf("%i: %i / %i\n", BoardState.side, x, l_counter);
 
         executeMove(&BoardState, l_moves[x]);
 
@@ -272,20 +274,20 @@ int main(void) {
 
         }
     }
+    printBoard(BoardState.AllPieces);
+    printBoard(BoardState.BlackPawns);
+    printBoard(BoardState.WhitePawns);
 
-
-    //executeMove(&BoardState, moves[0]);
-    //executeMove(&BoardState, test_move);
-
-    //printBoard(BoardState.AllPieces);
-    //printBoard(BoardState.Empty);
-
-    //setPieceAtIndex(&BoardState, 8, 0);
-
-    for (int i=0; i < 30; i++) {
-        //printf("%i -> %i\n", p_moves[i].from_square, p_moves[i].to_square);
+    /*
+    for (int i = 0; i < 4; i++) { 
+        executeMove(&BoardState, test_moves[i]);
     }
-    //printf("%i\n", p_counter);
+
+
+    setPieceAtIndex(&BoardState, 1, 0);
+    printBoard(BoardState.AllPieces);
+    printBoard(BoardState.WhiteKnights);
+    */
 
     return 0;
 }
@@ -294,6 +296,7 @@ void executeMove(struct ChessBoard *BoardState, move move) {
     int from = move.from_square;
     int frompiece = getPieceAtIndex(BoardState, from);
     setPieceAtIndex(BoardState, from, 0);
+    setPieceAtIndex(BoardState, to, 0);
     setPieceAtIndex(BoardState, to, frompiece);
 
 }
@@ -348,6 +351,19 @@ void setPieceAtIndex(struct ChessBoard *BoardState, int index, int pieceType) {
     switch (pieceType) {
         case 0:
             BoardState->Empty |= loc;
+            BoardState->WhiteKnights &= ~(BoardState->WhiteKnights & BoardState->Empty);
+            BoardState->WhitePawns&= ~(BoardState->WhitePawns& BoardState->Empty);
+            BoardState->WhiteBishops&= ~(BoardState->WhiteBishops& BoardState->Empty);
+            BoardState->WhiteRooks&= ~(BoardState->WhiteRooks& BoardState->Empty);
+            BoardState->WhiteKings&= ~(BoardState->WhiteKings& BoardState->Empty);
+            BoardState->WhiteQueens&= ~(BoardState->WhiteQueens& BoardState->Empty);
+
+            BoardState->BlackKnights &= ~(BoardState->BlackKnights & BoardState->Empty);
+            BoardState->BlackPawns&= ~(BoardState->BlackPawns& BoardState->Empty);
+            BoardState->BlackBishops&= ~(BoardState->BlackBishops& BoardState->Empty);
+            BoardState->BlackRooks&= ~(BoardState->BlackRooks& BoardState->Empty);
+            BoardState->BlackKings&= ~(BoardState->BlackKings& BoardState->Empty);
+            BoardState->BlackQueens&= ~(BoardState->BlackQueens& BoardState->Empty);
             break;
         case BPAWN:
             BoardState->BlackPawns |= loc;
