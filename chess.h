@@ -55,6 +55,8 @@ void computeMoveList(bboard pseudo_moves, bboard loc, move *moves, int *move_cou
 // function to validate a list of pseudal legal moves by looking for checks in resulting positions
 void validateMoveList(struct ChessBoard *InitialBoard, move *pseudo_move_list, int *p_counter, move *legal_move_list, int *l_counter, int side);
 
+// todo: add function to decide if board is checkmate, which sides can castle, and en passant
+
 // function to iterate over all square on board, computing moves for each piece type and adding
 // the move lists to the global move array
 void computeWhitePseudo(struct ChessBoard *BoardState, move *moves, int *move_counter);
